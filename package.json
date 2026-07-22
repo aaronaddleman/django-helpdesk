@@ -15,6 +15,7 @@
     "raphael": "2.3.0"
   },
   "scripts": {
-    "build:static": "make static-vendor"
+    "build:static": "make static-vendor",
+    "heroku-postbuild": "make static-vendor"
   }
 }
