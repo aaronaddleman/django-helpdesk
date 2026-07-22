@@ -143,17 +143,28 @@ LOGIN_URL = "helpdesk:login"
 LOGIN_REDIRECT_URL = "helpdesk:home"
 
 
-DATABASES = {
-    # Setup postgress db with postgres as host and db name and read password from env var
-    "default": {
-        "ENGINE": "django.db.backends.postgresql",
-        "NAME": os.environ.get("POSTGRES_DB", "postgres"),
-        "USER": os.environ.get("POSTGRES_USER", "postgres"),
-        "PASSWORD": os.environ.get("POSTGRES_PASSWORD", "postgres"),
-        "HOST": os.environ.get("POSTGRES_HOST", "postgres"),
-        "PORT": os.environ.get("POSTGRES_PORT", "5432"),
+if os.environ.get("DATABASE_URL"):
+    # Heroku (and other 12-factor platforms) provide a single DATABASE_URL.
+    import dj_database_url
+
+    DATABASES = {
+        "default": dj_database_url.config(
+            conn_max_age=600,
+            ssl_require=os.environ.get("DATABASE_SSL_REQUIRE", "True") == "True",
+        )
     }
-}
+else:
+    DATABASES = {
+        # Setup postgress db with postgres as host and db name and read password from env var
+        "default": {
+            "ENGINE": "django.db.backends.postgresql",
+            "NAME": os.environ.get("POSTGRES_DB", "postgres"),
+            "USER": os.environ.get("POSTGRES_USER", "postgres"),
+            "PASSWORD": os.environ.get("POSTGRES_PASSWORD", "postgres"),
+            "HOST": os.environ.get("POSTGRES_HOST", "postgres"),
+            "PORT": os.environ.get("POSTGRES_PORT", "5432"),
+        }
+    }
 
 
 # Sites
@@ -238,12 +249,25 @@ STATIC_ROOT = os.environ.get(
 )
 STATIC_URL = os.environ.get("DJANGO_HELPDESK_STATIC_URL", "/static/")
 
+# Let WhiteNoise compress and serve collected static files (no hashed manifest,
+# so a missing vendored asset won't fail `collectstatic` during the build).
+STORAGES = {
+    "default": {
+        "BACKEND": "django.core.files.storage.FileSystemStorage",
+    },
+    "staticfiles": {
+        "BACKEND": "whitenoise.storage.CompressedStaticFilesStorage",
+    },
+}
+
 
 # MEDIA_ROOT is where media uploads are stored.
 # We set this to a directory to host file attachments created
 # with tickets.
 MEDIA_URL = "/media/"
-MEDIA_ROOT = "/data/media"
+# Overridable so it can point at a writable path (Heroku's filesystem is
+# ephemeral, so this is scratch space only — use S3 for durable attachments).
+MEDIA_ROOT = os.environ.get("DJANGO_HELPDESK_MEDIA_ROOT", "/data/media")
 
 # for Django 3.2+, set default for autofields:
 DEFAULT_AUTO_FIELD = "django.db.models.AutoField"

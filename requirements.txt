@@ -1,0 +1,15 @@
+# Heroku deploy requirements (used by the Python buildpack at the repo root).
+#
+# Installing the project itself (".") builds the django-helpdesk package from
+# pyproject.toml, which makes the `helpdesk` app importable and pulls in all of
+# its runtime dependencies (django, DRF, celery, markdown, etc.).
+.
+
+# Runtime / server deps for the standalone project
+gunicorn
+whitenoise
+psycopg2-binary
+dj-database-url
+
+# Enables HELPDESK_TEAMS_MODE_ENABLED=true (optional)
+pinax_teams
