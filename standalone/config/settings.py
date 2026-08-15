@@ -204,8 +204,8 @@ AUTH_PASSWORD_VALIDATORS = [
 
 # This demo uses the console backend, which simply prints emails to the console
 # rather than actually sending them out.
-DEFAULT_FROM_EMAIL = os.environ.get("DEFAULT_FROM_EMAIL", "example@example.com")
-SERVER_EMAIL = os.environ.get("SERVER_EMAIL", "example@example.com")
+DEFAULT_FROM_EMAIL = os.environ.get("DEFAULT_FROM_EMAIL", "noreply@localhost.localdomain")
+SERVER_EMAIL = os.environ.get("SERVER_EMAIL", "noreply@localhost.localdomain")
 
 if os.environ.get("EMAIL_HOST", None):
     EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
@@ -217,6 +217,21 @@ if os.environ.get("EMAIL_HOST", None):
         EMAIL_PORT = os.environ["EMAIL_PORT"]
     except KeyError:
         raise ImproperlyConfigured("Please set the EMAIL_PORT environment variable.")
+
+    try:
+        EMAIL_USE_TLS = os.environ["EMAIL_USE_TLS"].lower() == "true"
+    except KeyError:
+        raise ImproperlyConfigured("Please set the EMAIL_USE_TLS environment variable.")
+
+    try:
+        EMAIL_HOST_USER = os.environ["EMAIL_HOST_USER"]
+    except KeyError:
+        raise ImproperlyConfigured("Please set the EMAIL_HOST_USER environment variable.")
+
+    try:
+        EMAIL_HOST_PASSWORD = os.environ["EMAIL_HOST_PASSWORD"]
+    except KeyError:
+        raise ImproperlyConfigured("Please set the EMAIL_HOST_PASSWORD environment variable.")
 else:
     EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
 
