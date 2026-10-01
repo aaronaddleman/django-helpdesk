@@ -333,6 +333,18 @@ STORAGES = {
     },
 }
 
+# Persistent media storage via Cloudinary (keeps ticket attachments off the
+# ephemeral dyno filesystem). Activated only when CLOUDINARY_URL is present —
+# the Heroku Cloudinary add-on sets it as cloudinary://<key>:<secret>@<cloud>,
+# which the cloudinary SDK reads automatically. Without it (e.g. local Docker)
+# the default FileSystemStorage above is used. RawMediaCloudinaryStorage stores
+# files as-is for any type, which suits arbitrary ticket attachments.
+if os.environ.get("CLOUDINARY_URL"):
+    INSTALLED_APPS += ["cloudinary_storage", "cloudinary"]
+    STORAGES["default"]["BACKEND"] = (
+        "cloudinary_storage.storage.RawMediaCloudinaryStorage"
+    )
+
 
 # MEDIA_ROOT is where media uploads are stored.
 # We set this to a directory to host file attachments created

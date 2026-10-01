@@ -15,5 +15,11 @@ dj-database-url
 # at boot without it). Provides unfold.contrib.* too — no separate installs.
 django-unfold
 
+# Persistent media storage (ticket attachments) via Cloudinary. Activated only
+# when CLOUDINARY_URL is set (the Heroku Cloudinary add-on sets it); otherwise
+# the app uses local filesystem storage. No boto3 required.
+cloudinary
+django-cloudinary-storage
+
 # Enables HELPDESK_TEAMS_MODE_ENABLED=true (optional)
 pinax_teams
