@@ -31,3 +31,38 @@
 .kanban-column:has(.kanban-drop-zone[data-status="8"]) .kanban-column-header span:first-child { color: #e0a58c; }
 .kanban-column:has(.kanban-drop-zone[data-status="4"]) .kanban-column-header span:first-child { color: #b5d4a0; }
 .kanban-column:has(.kanban-drop-zone[data-status="5"]) .kanban-column-header span:first-child { color: #8b93a7; }
+
+/* --- Kanban: show priority on each card ----------------------------------
+ * Cards carry a priority-<n> class (1 = Highest ... 5 = Low). We render a small
+ * corner badge from that class via a pseudo-element — no template change.
+ */
+.kanban-card { position: relative; }
+.kanban-card-title { padding-right: 2rem; }  /* leave room for the badge */
+.kanban-card::after {
+  position: absolute;
+  top: 0.45rem;
+  right: 0.5rem;
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  padding: 0.05rem 0.35rem;
+  border-radius: 8px;
+  color: #2e3440;
+}
+.kanban-card.priority-1::after { content: "P1"; background: #bf616a; color: #fff; }
+.kanban-card.priority-2::after { content: "P2"; background: #d08770; }
+.kanban-card.priority-3::after { content: "P3"; background: #ebcb8b; }
+.kanban-card.priority-4::after { content: "P4"; background: #a3be8c; }
+.kanban-card.priority-5::after { content: "P5"; background: #5e81ac; color: #fff; }
+
+/* --- Kanban: sort cards by priority within each column -------------------
+ * Make each drop zone a flex column and order cards by priority. Highest
+ * (P1) floats to the top; cards of equal priority keep the server's order
+ * (due date, then last modified). Visual-only — drag/drop is unaffected.
+ */
+.kanban-drop-zone { display: flex; flex-direction: column; }
+.kanban-card.priority-1 { order: 1; }
+.kanban-card.priority-2 { order: 2; }
+.kanban-card.priority-3 { order: 3; }
+.kanban-card.priority-4 { order: 4; }
+.kanban-card.priority-5 { order: 5; }
