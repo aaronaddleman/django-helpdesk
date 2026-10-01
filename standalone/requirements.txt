@@ -18,3 +18,4 @@ django-cleanup
 oauthlib
 requests_oauthlib
 requests
+django-unfold

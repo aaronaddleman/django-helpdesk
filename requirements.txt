@@ -11,5 +11,9 @@ whitenoise
 psycopg2-binary
 dj-database-url
 
+# Admin theme (settings.py lists "unfold" in INSTALLED_APPS; the app crashes
+# at boot without it). Provides unfold.contrib.* too — no separate installs.
+django-unfold
+
 # Enables HELPDESK_TEAMS_MODE_ENABLED=true (optional)
 pinax_teams

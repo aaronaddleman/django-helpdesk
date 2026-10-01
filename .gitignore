@@ -63,3 +63,10 @@ demodesk/db.sqlite3
 .vscode/
 .cursor/
 .devcontainer/
+
+# Standalone files not meant to be committed
+standalone/__pycache__/
+standalone/*.pyc
+standalone/media/
+standalone/static/
+standalone/db*

@@ -4,33 +4,34 @@ FROM node:20 AS frontend-builder
 # Copy source and build static assets
 WORKDIR /app
 
-COPY django-helpdesk/ .
+COPY . .
 
 # Enable Corepack to use the defined packageManager in package.json
 RUN corepack enable
 # Install dependencies
 RUN yarn install
-COPY . .
 RUN yarn build:static
 
 # --- Stage 2: Main Django image ---
-FROM python:3.11-slim-bullseye AS app
+FROM python:3.11-slim-bookworm AS app
 LABEL src=https://github.com/django-helpdesk/django-helpdesk
-RUN apt-get update
-RUN apt-get install -yqq \
+# Keep update + install in a single layer so the package index is never cached
+# separately from the install (stale indexes cause 404s on moved .deb files).
+RUN apt-get update && apt-get install -yqq \
    postgresql-common \
    postgresql-client \
    cron \
-   git
+   git \
+   && rm -rf /var/lib/apt/lists/*
 
 # Copy directories
-COPY django-helpdesk/src/ /opt/django-helpdesk/src/
-COPY django-helpdesk/standalone/ /opt/django-helpdesk/standalone/
+COPY src/ /opt/django-helpdesk/src/
+COPY standalone/ /opt/django-helpdesk/standalone/
 COPY --from=frontend-builder /app/src/helpdesk/static/helpdesk/vendor /opt/django-helpdesk/src/helpdesk/static/helpdesk/vendor
 
 # Copy files
-COPY django-helpdesk/pyproject.toml /opt/django-helpdesk/
-COPY django-helpdesk/README.rst /opt/django-helpdesk/
+COPY pyproject.toml /opt/django-helpdesk/
+COPY README.rst /opt/django-helpdesk/
 
 COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
 RUN pip3 install --upgrade pip

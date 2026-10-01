@@ -1,0 +1,33 @@
+/* Project theme overrides for django-helpdesk.
+ *
+ * This file overrides helpdesk's bundled (empty) helpdesk-extend.css, which is
+ * loaded last in helpdesk/base-head.html. Keeping customizations here means we
+ * never edit the upstream package, so pulling updates stays conflict-free.
+ */
+
+/* --- Kanban column colors ------------------------------------------------
+ * The column header carries no status, but the drop zone does
+ * (data-status="<id>"), so we color each column via :has(). IDs match
+ * HELPDESK_TICKET_STATUS_CHOICES in settings.py:
+ *   1 Open · 7 Needs Review · 6 In Progress · 8 On Hold · 4 Closed · 5 Duplicate
+ */
+.kanban-column:has(.kanban-drop-zone[data-status="1"]) { border-top: 3px solid #5e81ac; }
+.kanban-column:has(.kanban-drop-zone[data-status="7"]) { border-top: 3px solid #b48ead; }
+.kanban-column:has(.kanban-drop-zone[data-status="6"]) { border-top: 3px solid #ebcb8b; }
+.kanban-column:has(.kanban-drop-zone[data-status="8"]) { border-top: 3px solid #d08770; }
+.kanban-column:has(.kanban-drop-zone[data-status="4"]) { border-top: 3px solid #a3be8c; }
+.kanban-column:has(.kanban-drop-zone[data-status="5"]) { border-top: 3px solid #4c566a; }
+
+.kanban-column:has(.kanban-drop-zone[data-status="1"]) .kanban-column-header { border-bottom-color: #5e81ac; }
+.kanban-column:has(.kanban-drop-zone[data-status="7"]) .kanban-column-header { border-bottom-color: #b48ead; }
+.kanban-column:has(.kanban-drop-zone[data-status="6"]) .kanban-column-header { border-bottom-color: #ebcb8b; }
+.kanban-column:has(.kanban-drop-zone[data-status="8"]) .kanban-column-header { border-bottom-color: #d08770; }
+.kanban-column:has(.kanban-drop-zone[data-status="4"]) .kanban-column-header { border-bottom-color: #a3be8c; }
+.kanban-column:has(.kanban-drop-zone[data-status="5"]) .kanban-column-header { border-bottom-color: #4c566a; }
+
+.kanban-column:has(.kanban-drop-zone[data-status="1"]) .kanban-column-header span:first-child { color: #88c0d0; }
+.kanban-column:has(.kanban-drop-zone[data-status="7"]) .kanban-column-header span:first-child { color: #d3b7d8; }
+.kanban-column:has(.kanban-drop-zone[data-status="6"]) .kanban-column-header span:first-child { color: #f0d9a0; }
+.kanban-column:has(.kanban-drop-zone[data-status="8"]) .kanban-column-header span:first-child { color: #e0a58c; }
+.kanban-column:has(.kanban-drop-zone[data-status="4"]) .kanban-column-header span:first-child { color: #b5d4a0; }
+.kanban-column:has(.kanban-drop-zone[data-status="5"]) .kanban-column-header span:first-child { color: #8b93a7; }

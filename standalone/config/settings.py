@@ -39,6 +39,16 @@ CSRF_COOKIE_SECURE = True
 # Application definition
 
 INSTALLED_APPS = [
+    "unfold",  # before django.contrib.admin
+    "unfold.contrib.filters",  # optional, if special filters are needed
+    "unfold.contrib.forms",  # optional, if special form elements are needed
+    "unfold.contrib.inlines",  # optional, if special inlines are needed
+    # "unfold.contrib.import_export",  # optional, if django-import-export package is used
+    # "unfold.contrib.guardian",  # optional, if django-guardian package is used
+    # "unfold.contrib.simple_history",  # optional, if django-simple-history package is used
+    # "unfold.contrib.location_field",  # optional, if django-location-field package is used
+    # "unfold.contrib.constance",  # optional, if django-constance package is used
+    # "unfold.contrib.hijack",  # optional, if django-hijack package is used
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
@@ -50,6 +60,8 @@ INSTALLED_APPS = [
     "bootstrap4form",
     "helpdesk",  # This is us!
     "rest_framework",  # required for the API
+    # Must be last: re-themes other apps' admin registrations with Unfold.
+    "standalone.unfold_admin",
 ]
 
 # Default teams mode to disabled unless overridden by an environment variable set to "false"
@@ -141,6 +153,45 @@ HELPDESK_REDIRECT_TO_LOGIN_BY_DEFAULT = (
 )
 LOGIN_URL = "helpdesk:login"
 LOGIN_REDIRECT_URL = "helpdesk:home"
+
+
+# --- Custom ticket statuses ---------------------------------------------
+# django-helpdesk reads ticket statuses from these settings (see
+# helpdesk/settings.py). `status` is an IntegerField, so adding/removing
+# choices needs no database migration.
+#
+# We keep six statuses. "Resolved" (built-in id 3) is intentionally dropped
+# so only "Closed" remains; its constant stays defined internally, so the
+# code paths that reference it simply never fire. "Reopened" is mapped onto
+# "Open" (same id) so a ticket reopened by an email reply (helpdesk/email.py
+# auto-sets REOPENED_STATUS) returns to the Open column instead of needing a
+# column of its own.
+HELPDESK_TICKET_REOPENED_STATUS = 1  # treat "reopened" as "open"
+
+# The order of entries here is the left-to-right order of the Kanban columns.
+HELPDESK_TICKET_STATUS_CHOICES = (
+    (1, "Open"),
+    (7, "Needs Review"),
+    (6, "In Progress"),
+    (8, "On Hold"),
+    (4, "Closed"),
+    (5, "Duplicate"),
+)
+
+# Statuses treated as "active/open": counted in open-ticket lists and
+# dashboards, and they block tickets that depend on them.
+HELPDESK_TICKET_OPEN_STATUSES = (1, 6, 7, 8)
+
+# Allowed transitions: for a ticket's current status, which statuses the
+# update form offers (the Kanban allows dropping into any column).
+HELPDESK_TICKET_STATUS_CHOICES_FLOW = {
+    1: (1, 7, 6, 8, 4, 5),  # Open
+    7: (7, 6, 8, 4, 5),     # Needs Review
+    6: (6, 8, 7, 4, 5),     # In Progress
+    8: (8, 6, 7, 4, 5),     # On Hold
+    4: (4, 1),              # Closed -> reopen to Open
+    5: (5, 1),              # Duplicate -> reopen to Open
+}
 
 
 if os.environ.get("DATABASE_URL"):
@@ -263,6 +314,13 @@ STATIC_ROOT = os.environ.get(
     "DJANGO_HELPDESK_STATIC_ROOT", normpath(PROJECT_ROOT, "static")
 )
 STATIC_URL = os.environ.get("DJANGO_HELPDESK_STATIC_URL", "/static/")
+
+# Project-level static overrides. Files here are collected BEFORE the helpdesk
+# app's own static (FileSystemFinder runs before AppDirectoriesFinder), so a
+# file at assets/helpdesk/<name> overrides helpdesk's bundled copy. This is how
+# we theme the UI without editing the upstream package (e.g. helpdesk-extend.css
+# is the override hook loaded last in helpdesk/base-head.html).
+STATICFILES_DIRS = [normpath(PROJECT_ROOT, "assets")]
 
 # Let WhiteNoise compress and serve collected static files (no hashed manifest,
 # so a missing vendored asset won't fail `collectstatic` during the build).

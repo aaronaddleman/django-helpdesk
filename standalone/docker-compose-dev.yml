@@ -24,7 +24,7 @@ services:
      - postgres
 
  postgres:
-   image: postgres:12-bullseye
+   image: postgres:16-bookworm
    volumes:
     - ./db:/var/lib/postgresql/data
    env_file: docker.env
