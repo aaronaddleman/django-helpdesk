@@ -139,6 +139,19 @@ HELPDESK_SUBMIT_A_TICKET_PUBLIC = (
     os.environ.get("HELPDESK_SUBMIT_A_TICKET_PUBLIC", "True") == "True"
 )
 
+# Restrict who can submit via the public form to approved email domains.
+# Comma-separated env var (e.g. "addleman.tech,example.com"); empty = no
+# restriction. Enforced by a custom public form plugged in through helpdesk's
+# own HELPDESK_PUBLIC_TICKET_FORM_CLASS hook (no upstream edits).
+HELPDESK_ALLOWED_SUBMITTER_DOMAINS = [
+    d.strip()
+    for d in os.environ.get("HELPDESK_ALLOWED_SUBMITTER_DOMAINS", "").split(",")
+    if d.strip()
+]
+HELPDESK_PUBLIC_TICKET_FORM_CLASS = (
+    "standalone.config.forms.DomainRestrictedPublicTicketForm"
+)
+
 # Should the Knowledgebase be enabled?
 HELPDESK_KB_ENABLED = os.environ.get("HELPDESK_KB_ENABLED", "True") == "True"
 
@@ -258,7 +271,15 @@ AUTH_PASSWORD_VALIDATORS = [
 DEFAULT_FROM_EMAIL = os.environ.get("DEFAULT_FROM_EMAIL", "noreply@localhost.localdomain")
 SERVER_EMAIL = os.environ.get("SERVER_EMAIL", "noreply@localhost.localdomain")
 
-if os.environ.get("EMAIL_HOST", None):
+if not os.environ.get("EMAIL_HOST") and os.environ.get("MAILGUN_SMTP_SERVER"):
+    # Heroku Mailgun add-on provides MAILGUN_SMTP_* instead of EMAIL_*; map them.
+    EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+    EMAIL_HOST = os.environ["MAILGUN_SMTP_SERVER"]
+    EMAIL_PORT = int(os.environ.get("MAILGUN_SMTP_PORT", "587"))
+    EMAIL_HOST_USER = os.environ["MAILGUN_SMTP_LOGIN"]
+    EMAIL_HOST_PASSWORD = os.environ["MAILGUN_SMTP_PASSWORD"]
+    EMAIL_USE_TLS = True
+elif os.environ.get("EMAIL_HOST", None):
     EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
     try:
         EMAIL_HOST = os.environ["EMAIL_HOST"]
